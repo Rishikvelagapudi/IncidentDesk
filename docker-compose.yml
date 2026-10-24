@@ -1,0 +1,17 @@
+services:
+  app:
+    build: .
+    ports: ["8000:8000"]
+    environment:
+      MONGO_URL: mongodb://mongo:27017
+      SECRET_KEY: change-me
+      PUBLIC_URL: http://localhost:8000
+      ANALYSIS_SPEED: "2"
+      # ANTHROPIC_API_KEY: your-key   # optional: Claude writes the observation text from the evidence frame
+    volumes: ["./data:/app/backend/data"]
+    depends_on: [mongo]
+  mongo:
+    image: mongo:7
+    volumes: ["mongo-data:/data/db"]
+volumes:
+  mongo-data:

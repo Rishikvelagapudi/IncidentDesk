@@ -1,0 +1,8 @@
+fastapi>=0.110
+uvicorn[standard]>=0.29
+python-multipart>=0.0.9
+opencv-python-headless>=4.9
+numpy>=1.26
+httpx>=0.27
+pymongo>=4.6        # optional: only used when MONGO_URL is set
+ultralytics>=8.2    # YOLOv8; if missing, analysis falls back to motion-only
