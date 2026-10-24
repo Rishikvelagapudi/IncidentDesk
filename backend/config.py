@@ -41,7 +41,7 @@ for _pair in os.getenv("USERS", "admin:admin123,reviewer:review123").split(","):
     if _u.strip():
         USERS[_u.strip()] = _p.strip()
 SECRET_KEY = os.getenv("SECRET_KEY") or secrets.token_hex(32)  # unset = sessions reset on restart
-PUBLIC_URL = os.getenv("PUBLIC_URL", "http://localhost:8000").rstrip("/")
+PUBLIC_URL = (os.getenv("PUBLIC_URL") or os.getenv("RENDER_EXTERNAL_URL") or "http://localhost:8000").rstrip("/")
 
 # Email alerts. Without SMTP_HOST the message is written to data/outbox/ instead of being sent.
 SMTP_HOST = os.getenv("SMTP_HOST", "")

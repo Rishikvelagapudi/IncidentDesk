@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: incidentdesk
+    runtime: docker
+    plan: free
+    region: oregon
+    healthCheckPath: /api/state
+    envVars:
+      - key: PORT
+        value: 10000
