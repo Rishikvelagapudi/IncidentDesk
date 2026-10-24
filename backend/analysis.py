@@ -17,7 +17,7 @@ import cv2
 import numpy as np
 
 from config import (CONGESTION_MIN, EVENT_COOLDOWN_SEC, EVIDENCE_POST_SEC, EVIDENCE_PRE_SEC,
-                    SAMPLE_FPS, SEGMENT_SEC, YOLO_CONF, YOLO_MODEL)
+                    SAMPLE_FPS, SEGMENT_SEC, YOLO_CONF, YOLO_IMGSZ, YOLO_MODEL)
 
 log = logging.getLogger("analysis")
 
@@ -62,6 +62,12 @@ class Detector:
             if not cls._tried:
                 cls._tried = True
                 try:
+                    try:
+                        import torch
+                        if hasattr(torch, "set_num_threads") and torch.get_num_threads() > 2:
+                            torch.set_num_threads(2)
+                    except Exception:
+                        pass
                     from ultralytics import YOLO
 
                     cls._model = YOLO(YOLO_MODEL)
@@ -75,7 +81,7 @@ class Detector:
         if m is None:
             return None
         with cls._lock:
-            res = m.predict(frame, conf=YOLO_CONF, verbose=False, imgsz=640)[0]
+            res = m.predict(frame, conf=YOLO_CONF, verbose=False, imgsz=YOLO_IMGSZ)[0]
         out = []
         for b in res.boxes:
             c = int(b.cls[0])
@@ -299,8 +305,8 @@ class VideoAnalyzer:
 
     def _process(self, frame, t):
         h, w = frame.shape[:2]
-        if w > 960:
-            frame = cv2.resize(frame, (960, int(h * 960 / w)))
+        if w > 640:
+            frame = cv2.resize(frame, (640, int(h * 640 / w)))
         events = []
         dets = Detector.detect(frame) if self.use_yolo else None
         if dets is not None:

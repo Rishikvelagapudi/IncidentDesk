@@ -8,3 +8,9 @@ services:
     envVars:
       - key: PORT
         value: 10000
+      - key: YOLO_IMGSZ
+        value: "320"
+      - key: SAMPLE_FPS
+        value: "2.5"
+      - key: ANALYSIS_SPEED
+        value: "8"

@@ -93,8 +93,13 @@ class Orchestrator:
                 for post in seg["post"]:
                     await self.handle_post(post)
                 await self.hub.broadcast(dict(type="camera_update", camera=cam))
-                pace = (seg["t_end"] - seg["t_start"]) / ANALYSIS_SPEED
-                await asyncio.sleep(max(0.0, pace - (time.monotonic() - t0)))
+                if ANALYSIS_SPEED > 0:
+                    pace = (seg["t_end"] - seg["t_start"]) / ANALYSIS_SPEED
+                    sleep_time = max(0.0, pace - (time.monotonic() - t0))
+                    if sleep_time > 0:
+                        await asyncio.sleep(sleep_time)
+                else:
+                    await asyncio.sleep(0)
             cam["status"], cam["progress"] = "complete", 1.0
         except asyncio.CancelledError:
             raise
