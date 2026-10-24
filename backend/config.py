@@ -12,12 +12,12 @@ for _p in (UPLOAD_DIR, EVIDENCE_DIR, OUTBOX_DIR):
     _p.mkdir(parents=True, exist_ok=True)
 
 SEGMENT_SEC = float(os.getenv("SEGMENT_SEC", "2"))          # video seconds per analysis segment
-SAMPLE_FPS = float(os.getenv("SAMPLE_FPS", "2.5"))          # frames analysed per video second (2.5 cuts CPU load by 50%)
-ANALYSIS_SPEED = float(os.getenv("ANALYSIS_SPEED", "8"))    # pacing factor: higher = faster processing
+SAMPLE_FPS = float(os.getenv("SAMPLE_FPS", "1.5"))          # 1.5 FPS: fast, catches all events, minimal CPU
+ANALYSIS_SPEED = float(os.getenv("ANALYSIS_SPEED", "0"))    # 0 = uncapped (runs at maximum hardware throughput)
 EVENT_COOLDOWN_SEC = float(os.getenv("EVENT_COOLDOWN_SEC", "10"))
 MAX_CAMERAS = int(os.getenv("MAX_CAMERAS", "81"))
 YOLO_MODEL = os.getenv("YOLO_MODEL", "yolov8n.pt")
-YOLO_IMGSZ = int(os.getenv("YOLO_IMGSZ", "320"))            # 320 for 3x-5x faster CPU inference, 640 for GPU
+YOLO_IMGSZ = int(os.getenv("YOLO_IMGSZ", "256"))            # 256 for maximum CPU inference speed
 YOLO_CONF = float(os.getenv("YOLO_CONF", "0.35"))
 MONGO_URL = os.getenv("MONGO_URL", "")
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")

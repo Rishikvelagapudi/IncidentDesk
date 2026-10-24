@@ -4,13 +4,13 @@ services:
     runtime: docker
     plan: free
     region: oregon
-    healthCheckPath: /api/state
+    healthCheckPath: /healthz
     envVars:
       - key: PORT
         value: 10000
       - key: YOLO_IMGSZ
-        value: "320"
+        value: "256"
       - key: SAMPLE_FPS
-        value: "2.5"
+        value: "1.5"
       - key: ANALYSIS_SPEED
-        value: "8"
+        value: "0"

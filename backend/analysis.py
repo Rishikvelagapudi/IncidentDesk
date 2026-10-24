@@ -81,7 +81,7 @@ class Detector:
         if m is None:
             return None
         with cls._lock:
-            res = m.predict(frame, conf=YOLO_CONF, verbose=False, imgsz=YOLO_IMGSZ)[0]
+            res = m.predict(frame, conf=YOLO_CONF, verbose=False, imgsz=YOLO_IMGSZ, classes=[0, 2, 3, 5, 7], max_det=20)[0]
         out = []
         for b in res.boxes:
             c = int(b.cls[0])
@@ -116,7 +116,11 @@ class Track:
         a, b = self.at(t0), self.at(t1)
         dt = b[0] - a[0]
         if dt < 0.2:
-            return 0.0
+            if len(self.hist) >= 2:
+                a, b = self.hist[0], self.hist[-1]
+                dt = b[0] - a[0]
+            if dt < 0.2:
+                return 0.0
         return math.dist(center(a[1]), center(b[1])) / dt / diag
 
 
@@ -265,6 +269,27 @@ class MotionMonitor:
         return None
 
 
+class LazyRec(dict):
+    """Encodes JPEG only on demand when evidence is saved, skipping unused buffer frames."""
+
+    def __init__(self, t, frame, summary, jpeg_fn):
+        super().__init__(t=t, summary=summary)
+        self.frame = frame
+        self._jpeg_fn = jpeg_fn
+
+    def __getitem__(self, key):
+        if key == "jpeg":
+            if "jpeg" not in self:
+                self["jpeg"] = self._jpeg_fn(self.frame)
+            return super().__getitem__("jpeg")
+        return super().__getitem__(key)
+
+    def get(self, key, default=None):
+        if key == "jpeg":
+            return self["jpeg"]
+        return super().get(key, default)
+
+
 class VideoAnalyzer:
     """Samples frames, keeps a rolling buffer, and collects before/during/after evidence per event."""
 
@@ -274,7 +299,7 @@ class VideoAnalyzer:
         self.motion = MotionMonitor()
         self.last: dict[str, float] = {}
         self.use_yolo = False
-        self.buffer: deque = deque()   # rolling buffer of JPEG-compressed frames
+        self.buffer: deque = deque()   # rolling buffer of frames
         self.pending: list[dict] = []  # events still collecting post-event frames
         self.completed: list[dict] = []
 
@@ -317,7 +342,7 @@ class VideoAnalyzer:
         m = self.motion.update(frame, t)
         if m:
             events.append(m)
-        rec = dict(t=t, jpeg=self._jpeg(frame, 75), summary=summary)
+        rec = LazyRec(t=t, frame=frame, summary=summary, jpeg_fn=lambda f: self._jpeg(f, 75))
 
         for p in list(self.pending):  # post-event evidence, one frame per second
             if t - p["last_t"] >= 1.0 and len(p["post"]) < EVIDENCE_POST_SEC:
