@@ -169,11 +169,16 @@ async def ws(sock: WebSocket):
         hub.clients.discard(sock)
 
 
+@app.api_route("/healthz", methods=["GET", "HEAD"])
+def healthz():
+    return {"status": "ok"}
+
+
 DIST = Path(__file__).parent.parent / "frontend" / "dist"
 if DIST.exists():
     app.mount("/assets", StaticFiles(directory=DIST / "assets"), name="assets")
 
-    @app.get("/{full_path:path}")
+    @app.api_route("/{full_path:path}", methods=["GET", "HEAD"])
     def spa(full_path: str):
         if full_path.startswith("api/"):
             raise HTTPException(404)
